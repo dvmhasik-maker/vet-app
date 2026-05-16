@@ -620,6 +620,18 @@ function saveAsImage(id) {
   var today  = new Date().toISOString().slice(0, 10);
   var label  = id === 'result' ? 'Result' : 'Input';
 
+  // 분석결과 화면은 이미 환자정보가 포함되어 있으므로 별도 추가 없이 저장
+  if (id === 'result') {
+    html2canvas(target, { backgroundColor: '#ffffff', scale: 2 }).then(function(canvas) {
+      var link = document.createElement('a');
+      link.download = 'Echo_' + ptName + '_' + label + '_' + today + '.jpg';
+      link.href = canvas.toDataURL('image/jpeg', 1.0);
+      link.click();
+    });
+    return;
+  }
+
+  // 입력 화면 저장 시에는 상단에 환자정보 요약을 추가하여 저장
   var ptDiv = document.createElement('div');
   ptDiv.style.cssText = 'position:fixed;top:-9999px;left:0;width:' + target.offsetWidth + 'px;background:#fff;padding:16px 24px 0;';
   ptDiv.innerHTML = getPatientSummaryHtml();
