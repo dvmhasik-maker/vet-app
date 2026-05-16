@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>수의 심장 초음파 분석기</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <style>
+    :root {
+      --blue: #1a6fc4;
+      --green: #28a745;
+      --teal: #17a2b8;
+      --light-bg: #f4f6f9;
+      --card-bg: #ffffff;
+    }
+    * { box-sizing: border-box; }
+    body { font-family: 'Malgun Gothic', '맑은 고딕', sans-serif; background: var(--light-bg); padding: 16px; margin: 0; }
+
+    .top-header { max-width: 760px; margin: 0 auto; text-align: center; }
+    .top-header h1 { font-size: 1.5rem; margin: 0 0 14px; color: #222; }
+    .species-tabs { display: flex; justify-content: center; gap: 0; margin-bottom: 20px; }
+    .species-tabs button {
+      flex: 1; max-width: 180px; padding: 10px 0;
+      border: 2px solid var(--blue); background: #fff; color: var(--blue);
+      font-size: 1rem; font-weight: bold; cursor: pointer; transition: all .15s;
+    }
+    .species-tabs button:first-child { border-radius: 8px 0 0 8px; }
+    .species-tabs button:last-child  { border-radius: 0 8px 8px 0; }
+    .species-tabs button.active { background: var(--blue); color: #fff; }
+
+    .container { max-width: 760px; margin: 0 auto 20px; background: var(--card-bg); padding: 20px 24px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,.08); }
+
+    .section-header {
+      margin: 28px 0 10px; padding: 9px 14px;
+      background: #e9ecef; border-left: 5px solid var(--blue);
+      border-radius: 4px; font-size: 1rem; font-weight: bold; color: #333;
+    }
+    .measure-item {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 7px 4px; border-bottom: 1px dashed #e0e0e0;
+    }
+    .measure-item label { flex: 2; font-size: .92rem; color: #444; }
+    .measure-item input[type="number"],
+    .measure-item select {
+      flex: 1; padding: 6px 8px;
+      border: 1px solid #ccc; border-radius: 5px;
+      background: #e8f5e9; font-size: .92rem;
+    }
+    input[readonly] { background: #f0f0f0 !important; color: #666; }
+    .checkbox-group { display: flex; flex-wrap: wrap; gap: 10px; padding: 8px 4px 6px; }
+    .checkbox-group label { font-size: .88rem; display: flex; align-items: center; gap: 4px; font-weight: normal; color: #333; }
+    .weight-row { display: flex; align-items: center; gap: 12px; padding: 10px 4px; border-bottom: 2px solid #c8d6e5; margin-bottom: 4px; }
+    .weight-row label { font-weight: bold; font-size: 1rem; flex: 2; }
+    .weight-row input { flex: 1; padding: 8px; border: 1px solid #aaa; border-radius: 5px; font-size: 1rem; background: #fff3cd; }
+
+    .btn-analyze {
+      width: 100%; margin-top: 22px; padding: 13px;
+      background: var(--blue); color: #fff;
+      border: none; border-radius: 7px; font-size: 1.05rem; font-weight: bold;
+      cursor: pointer; transition: opacity .15s;
+    }
+    .btn-analyze:hover { opacity: .88; }
+    .save-buttons { display: flex; gap: 10px; margin-top: 12px; }
+    .save-buttons button {
+      flex: 1; padding: 11px; border: none; border-radius: 7px;
+      font-size: .95rem; font-weight: bold; cursor: pointer; transition: opacity .15s;
+    }
+    .save-buttons button:first-child { background: var(--green); color: #fff; }
+    .save-buttons button:last-child  { background: var(--teal);  color: #fff; }
+    .save-buttons button:hover { opacity: .88; }
+
+    .result-title { text-align: center; font-size: 1.4rem; margin: 0 0 20px; color: #222; }
+    .result-group { margin-bottom: 22px; border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,.06); overflow: hidden; }
+    .result-group h3 { margin: 0; padding: 10px 16px; font-size: 1rem; font-weight: bold; background: #fff; color: #333; }
+    .result-table { width: 100%; border-collapse: collapse; }
+    .result-table th { padding: 9px 8px; font-size: .88rem; background: #f1f3f5; color: #555; border: 1px solid #ddd; text-align: center; }
+    .result-table td { padding: 8px; font-size: .9rem; border: 1px solid #ddd; text-align: center; }
+    .result-table tr:nth-child(even) td { background: #fafafa; }
+
+    .diagnosis-banner { text-align: center; padding: 18px; border-radius: 10px; margin-bottom: 20px; background: #e3f2fd; }
+    .diagnosis-banner .dx-label { font-size: 1.6rem; font-weight: bold; color: var(--blue); margin-bottom: 6px; }
+    .diagnosis-banner .dx-sub   { font-size: 1rem; color: #555; margin-top: 4px; }
+    .cat-stage-table th { background: linear-gradient(to right, #1a6fc4, #3399ff); color: #fff; }
+
+    /* ── 환자 정보 ── */
+    .patient-card {
+      max-width: 760px; margin: 0 auto 16px;
+      background: #fff; border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,.08);
+      padding: 16px 24px;
+      border-top: 4px solid var(--blue);
+    }
+    .patient-card h3 { margin: 0 0 12px; font-size: 1rem; color: var(--blue); display: flex; align-items: center; gap: 6px; }
+    .patient-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 20px; }
+    .patient-field { display: flex; flex-direction: column; gap: 4px; }
+    .patient-field label { font-size: .82rem; color: #666; font-weight: bold; }
+    .patient-field input,
+    .patient-field select {
+      padding: 7px 10px; border: 1px solid #ccc; border-radius: 6px;
+      font-size: .95rem; background: #fffde7; color: #333;
+    }
+
+    /* 환자정보 요약 (결과 상단) */
+    .patient-summary {
+      background: #f0f7ff; border-radius: 8px;
+      padding: 12px 16px; margin-bottom: 18px;
+      display: flex; flex-wrap: wrap; gap: 6px 24px;
+      font-size: .92rem; color: #333; border-left: 4px solid var(--blue);
+    }
+    .patient-summary span { white-space: nowrap; }
+    .patient-summary strong { color: var(--blue); }
+  </style>
+</head>
+<body>
+
+<div class="top-header">
+  <h1>&#x1F9EC; 수의 심장 초음파 분석기</h1>
+  <div class="species-tabs">
+    <button id="tab-dog" class="active" onclick="switchSpecies('dog')">&#x1F436; 강아지</button>
+    <button id="tab-cat"               onclick="switchSpecies('cat')">&#x1F431; 고양이</button>
+  </div>
+</div>
+
+<!-- ════════ 환자 정보 ════════ -->
+<div class="patient-card" id="patient-info">
+  <h3>&#x1F43E; 환자 정보</h3>
+  <div class="patient-grid">
+    <div class="patient-field">
+      <label>이름</label>
+      <input type="text" id="pt_name" placeholder="예: 초코">
+    </div>
+    <div class="patient-field">
+      <label>품종</label>
+      <input type="text" id="pt_breed" placeholder="예: 말티즈 / 코리안 숏헤어">
+    </div>
+    <div class="patient-field">
+      <label>성별</label>
+      <select id="pt_sex">
+        <option value="">선택</option>
+        <option value="남">남</option>
+        <option value="중성화 남">중성화 남</option>
+        <option value="여">여</option>
+        <option value="중성화 여">중성화 여</option>
+      </select>
+    </div>
+    <div class="patient-field">
+      <label>나이</label>
+      <input type="text" id="pt_age" placeholder="예: 5세 3개월">
+    </div>
+  </div>
+</div>
+
+<!-- ════════ 강아지 입력 ════════ -->
+<div class="container" id="dog-input">
+  <h2 style="text-align:center;margin:0 0 16px;font-size:1.2rem;color:#1a6fc4;">강아지 심장 초음파 분석</h2>
+  <div class="weight-row">
+    <label>체중 (kg)</label>
+    <input type="number" id="dog_weight" step="0.1" placeholder="예: 5.0">
+  </div>
+
+  <div class="section-header">RPLA5C</div>
+  <div class="measure-item"><label>LVOT 길이</label><input type="number" id="dog_LVOT_len" step="any"></div>
+
+  <div class="section-header">RPSALV</div>
+  <div class="measure-item"><label>IVSd</label><input type="number" id="dog_IVSd" step="any"></div>
+  <div class="measure-item"><label>LVIDd</label><input type="number" id="dog_LVIDd" step="any"></div>
+  <div class="measure-item"><label>LVPWd</label><input type="number" id="dog_LVPWd" step="any"></div>
+  <div class="measure-item"><label>LVIDs</label><input type="number" id="dog_LVIDs" step="any"></div>
+  <div class="measure-item"><label>FS (%)</label><input type="number" id="dog_FS" step="any"></div>
+  <div class="measure-item"><label>EPSS</label><input type="number" id="dog_EPSS" step="any"></div>
+
+  <div class="section-header">RPSAAO</div>
+  <div class="measure-item"><label>LA 길이</label><input type="number" id="dog_LA_len" step="any"></div>
+  <div class="measure-item"><label>LA/Ao ratio</label><input type="number" id="dog_LA_Ao" step="any"></div>
+
+  <div class="section-header">RPSAPA</div>
+  <div class="measure-item"><label>MPA/Ao ratio</label><input type="number" id="dog_MPA_Ao" step="any"></div>
+  <div class="measure-item"><label>RPAD index</label><input type="number" id="dog_RPAD" step="any"></div>
+  <div class="measure-item"><label>PA 속도</label><input type="number" id="dog_PA_vel" step="any"></div>
+  <div class="measure-item"><label>PR 속도</label><input type="number" id="dog_PR_vel" step="any"></div>
+
+  <div class="section-header">LA4C</div>
+  <div class="measure-item"><label>MV E wave</label><input type="number" id="dog_MV_E" step="any"></div>
+  <div class="measure-item"><label>DTE</label><input type="number" id="dog_DTE" step="any"></div>
+  <div class="measure-item"><label>MV A wave</label><input type="number" id="dog_MV_A" step="any"></div>
+  <div class="measure-item"><label>MCO</label><input type="number" id="dog_MCO" step="any"></div>
+  <div class="measure-item"><label>MV E&#x27; wave</label><input type="number" id="dog_MV_Eprime" step="any"></div>
+  <div class="measure-item"><label>MV A&#x27; wave</label><input type="number" id="dog_MV_Aprime" step="any"></div>
+  <div class="measure-item"><label>MV S&#x27; wave</label><input type="number" id="dog_MV_Sprime" step="any"></div>
+  <div class="measure-item"><label>MR 속도</label><input type="number" id="dog_MR_vel" step="any"></div>
+  <div class="measure-item"><label>MR Vol.</label><input type="number" id="dog_MR_Vol" step="any"></div>
+  <div class="measure-item"><label>MR V1-V3</label><input type="number" id="dog_MR_V1V3" step="any"></div>
+  <div class="measure-item"><label>TR Fraction(area)</label><input type="number" id="dog_TR_Frac" step="any"></div>
+  <div class="measure-item"><label>TR 속도</label><input type="number" id="dog_TR_vel" step="any"></div>
+
+  <div class="section-header">LA5C</div>
+  <div class="measure-item"><label>LVOT VTI</label><input type="number" id="dog_LVOT_VTI" step="any"></div>
+  <div class="measure-item"><label>AV VTI</label><input type="number" id="dog_AV_VTI" step="any"></div>
+  <div class="measure-item"><label>AV 속도</label><input type="number" id="dog_AV_vel" step="any"></div>
+  <div class="measure-item"><label>LV ET</label><input type="number" id="dog_LV_ET" step="any"></div>
+  <div class="measure-item"><label>LV PEP</label><input type="number" id="dog_LV_PEP" step="any"></div>
+  <div class="measure-item"><label>HR</label><input type="number" id="dog_HR" step="any"></div>
+  <div class="measure-item"><label>IVRT</label><input type="number" id="dog_IVRT" step="any"></div>
+
+  <button class="btn-analyze" onclick="analyzeDog()">분석 시작</button>
+  <div class="save-buttons">
+    <button onclick="saveAsImage('dog-input')">&#x1F4F7; 입력화면 저장</button>
+    <button onclick="saveAsImage('result')">&#x1F4CA; 분석화면 저장</button>
+  </div>
+</div>
+
+<!-- ════════ 고양이 입력 ════════ -->
+<div class="container" id="cat-input" style="display:none;">
+  <h2 style="text-align:center;margin:0 0 16px;font-size:1.2rem;color:#1a6fc4;">고양이 심장 초음파 분석</h2>
+  <div class="weight-row">
+    <label>체중 (kg)</label>
+    <input type="number" id="cat_weight" step="0.1" placeholder="예: 5.5">
+  </div>
+
+  <div class="section-header">RPLA4C</div>
+  <div class="measure-item" style="flex-direction:column;align-items:flex-start;padding:10px 4px;">
+    <label style="margin-bottom:8px;font-weight:bold;">LV 형태</label>
+    <div class="checkbox-group">
+      <label><input type="checkbox" class="cat_LVform" value="Normal"> Normal</label>
+      <label><input type="checkbox" class="cat_LVform" value="Diffuse symmetric"> Diffuse symmetric</label>
+      <label><input type="checkbox" class="cat_LVform" value="Diffuse asymmetric IVS"> Diffuse asymmetric IVS</label>
+      <label><input type="checkbox" class="cat_LVform" value="Diffuse asymmetric LVFW"> Diffuse asymmetric LVFW</label>
+      <label><input type="checkbox" class="cat_LVform" value="Segmental Basal IVS"> Segmental Basal IVS</label>
+      <label><input type="checkbox" class="cat_LVform" value="Segmental Apical"> Segmental Apical</label>
+    </div>
+  </div>
+  <div class="measure-item">
+    <label>SEC (=smoke)</label>
+    <select id="cat_SEC">
+      <option value="">선택</option><option value="있음">있음</option><option value="없음">없음</option>
+    </select>
+  </div>
+  <div class="measure-item"><label>2D: IVSd</label><input type="number" id="cat_2D_IVSd" step="0.1"></div>
+  <div class="measure-item"><label>2D: LVPWd</label><input type="number" id="cat_2D_LVPWd" step="0.1"></div>
+
+  <div class="section-header">RPLA5C</div>
+  <div class="measure-item"><label>LVOT 길이</label><input type="number" id="cat_LVOT_len" step="0.1"></div>
+  <div class="measure-item">
+    <label>LVOT Turbulence</label>
+    <select id="cat_LVOT_turb">
+      <option value="">선택</option><option value="있음">있음</option><option value="없음">없음</option>
+    </select>
+  </div>
+  <div class="measure-item">
+    <label>SAM (LVOT 폐쇄)</label>
+    <select id="cat_SAM">
+      <option value="">선택</option><option value="있음">있음</option><option value="없음">없음</option>
+    </select>
+  </div>
+
+  <div class="section-header">RPSALV</div>
+  <div class="measure-item"><label>2D: LV wall</label><input type="number" id="cat_2D_LVwall" step="0.1"></div>
+  <div class="measure-item">
+    <label>PM</label>
+    <select id="cat_PM">
+      <option value="">선택</option><option value="Normal">Normal</option>
+      <option value="Thickness">Thickness</option><option value="Hyperecho">Hyperecho</option>
+    </select>
+  </div>
+  <div class="measure-item"><label>M: IVSd</label><input type="number" id="cat_M_IVSd" step="0.1"></div>
+  <div class="measure-item"><label>M: LVIDd</label><input type="number" id="cat_M_LVIDd" step="0.1"></div>
+  <div class="measure-item"><label>M: LVPWd</label><input type="number" id="cat_M_LVPWd" step="0.1"></div>
+  <div class="measure-item"><label>M: LVIDs</label><input type="number" id="cat_M_LVIDs" step="0.1"></div>
+  <div class="measure-item"><label>FS (%)</label><input type="number" id="cat_FS" step="0.1"></div>
+  <div class="measure-item"><label>EPSS</label><input type="number" id="cat_EPSS" step="0.1"></div>
+
+  <div class="section-header">RPSAAO</div>
+  <div class="measure-item"><label>LA 길이</label><input type="number" id="cat_LA_len" step="0.1"></div>
+  <div class="measure-item"><label>LA/Ao ratio</label><input type="number" id="cat_LA_Ao" step="0.1"></div>
+  <div class="measure-item"><label>M: LAFS</label><input type="number" id="cat_M_LAFS" step="0.1"></div>
+
+  <div class="section-header">RPSAPA</div>
+  <div class="measure-item">
+    <label>PA Turbulence</label>
+    <select id="cat_PA_turb">
+      <option value="">선택</option><option value="있음">있음</option><option value="없음">없음</option>
+    </select>
+  </div>
+  <div class="measure-item"><label>PA 속도</label><input type="number" id="cat_PA_vel" step="0.1"></div>
+  <div class="measure-item"><label>PR 속도</label><input type="number" id="cat_PR_vel" step="0.1"></div>
+
+  <div class="section-header">LA4C</div>
+  <div class="measure-item">
+    <label>MR Fraction(PISA) <small style="color:#888;">(자동계산)</small></label>
+    <input type="number" id="cat_MR_Frac" step="0.1" readonly>
+  </div>
+  <div class="measure-item"><label>MV E wave</label><input type="number" id="cat_MV_E" step="0.1"></div>
+  <div class="measure-item"><label>MV A wave</label><input type="number" id="cat_MV_A" step="0.1"></div>
+  <div class="measure-item"><label>MCO</label><input type="number" id="cat_MCO" step="0.1"></div>
+  <div class="measure-item">
+    <label>MV E/A ratio <small style="color:#888;">(자동계산)</small></label>
+    <input type="number" id="cat_MV_EA" step="0.1" readonly>
+  </div>
+  <div class="measure-item"><label>MV E&#x27; wave</label><input type="number" id="cat_MV_Eprime" step="0.1"></div>
+  <div class="measure-item"><label>MV A&#x27; wave</label><input type="number" id="cat_MV_Aprime" step="0.1"></div>
+  <div class="measure-item"><label>MV S&#x27; wave</label><input type="number" id="cat_MV_Sprime" step="0.1"></div>
+  <div class="measure-item">
+    <label>MV E&#x27;/A&#x27; ratio <small style="color:#888;">(자동계산)</small></label>
+    <input type="number" id="cat_MV_EAp" step="0.1" readonly>
+  </div>
+  <div class="measure-item">
+    <label>MV E/E&#x27; ratio <small style="color:#888;">(자동계산)</small></label>
+    <input type="number" id="cat_MV_EEp" step="0.1" readonly>
+  </div>
+  <div class="measure-item"><label>MR 속도</label><input type="number" id="cat_MR_vel" step="0.1"></div>
+  <div class="measure-item"><label>MR VTI</label><input type="number" id="cat_MR_VTI" step="0.1"></div>
+  <div class="measure-item"><label>TR 속도</label><input type="number" id="cat_TR_vel" step="0.1"></div>
+
+  <div class="section-header">LA5C</div>
+  <div class="measure-item"><label>LVOT VTI</label><input type="number" id="cat_LVOT_VTI" step="0.1"></div>
+  <div class="measure-item"><label>HR</label><input type="number" id="cat_HR" step="0.1"></div>
+  <div class="measure-item">
+    <label>SV <small style="color:#888;">(자동계산)</small></label>
+    <input type="number" id="cat_SV" step="0.1" readonly>
+  </div>
+  <div class="measure-item">
+    <label>CO <small style="color:#888;">(자동계산)</small></label>
+    <input type="number" id="cat_CO" step="0.1" readonly>
+  </div>
+  <div class="measure-item"><label>AV 속도</label><input type="number" id="cat_AV_vel" step="0.1"></div>
+  <div class="measure-item"><label>ET</label><input type="number" id="cat_ET" step="0.1"></div>
+  <div class="measure-item"><label>PEP</label><input type="number" id="cat_PEP" step="0.1"></div>
+  <div class="measure-item">
+    <label>PEP/ET <small style="color:#888;">(자동계산)</small></label>
+    <input type="number" id="cat_PEP_ET" step="0.1" readonly>
+  </div>
+
+  <button class="btn-analyze" onclick="analyzeCat()">분석 시작</button>
+  <div class="save-buttons">
+    <button onclick="saveAsImage('cat-input')">&#x1F4F7; 입력화면 저장</button>
+    <button onclick="saveAsImage('result')">&#x1F4CA; 분석화면 저장</button>
+  </div>
+</div>
+
+<!-- 분석 결과 -->
+<div class="container" id="result" style="display:none;">
+  <div id="analysis-result"></div>
+</div>
+
+<script>
+/* ── 공통: 값 읽기/쓰기 ── */
+function v(id) {
+  var el = document.getElementById(id);
+  if (!el) return 0;
+  var n = parseFloat(el.value);
+  return isNaN(n) ? 0 : n;
+}
+function vStr(id) {
+  var el = document.getElementById(id);
+  return el ? (el.value || '') : '';
+}
+function setVal(id, val) {
+  var el = document.getElementById(id);
+  if (el && val !== null && !isNaN(val) && isFinite(val) && val !== 0) {
+    el.value = parseFloat(val.toFixed(3));
+  }
+}
+
+/* ── 탭 전환 ── */
+function switchSpecies(sp) {
+  document.getElementById('dog-input').style.display = sp === 'dog' ? 'block' : 'none';
+  document.getElementById('cat-input').style.display = sp === 'cat' ? 'block' : 'none';
+  document.getElementById('tab-dog').classList.toggle('active', sp === 'dog');
+  document.getElementById('tab-cat').classList.toggle('active', sp === 'cat');
+  document.getElementById('result').style.display = 'none';
+}
+
+/* ── 환자정보 요약 텍스트 ── */
+function getPatientSummaryHtml() {
+  var name  = document.getElementById('pt_name').value  || '-';
+  var breed = document.getElementById('pt_breed').value || '-';
+  var sex   = document.getElementById('pt_sex').value   || '-';
+  var age   = document.getElementById('pt_age').value   || '-';
+  var species = document.getElementById('cat-input').style.display === 'none' ? '강아지' : '고양이';
+  var today = new Date().toLocaleDateString('ko-KR');
+  return '<div style="background:#f0f7ff;border-left:4px solid #1a6fc4;border-radius:8px;padding:12px 16px;margin-bottom:14px;font-family:Malgun Gothic,sans-serif;font-size:13px;color:#333;display:flex;flex-wrap:wrap;gap:6px 24px;">'
+    + '<span><strong style="color:#1a6fc4;">&#x1F43E; 환자</strong></span>'
+    + '<span>&#x1F4CB; 이름: <strong>' + name + '</strong></span>'
+    + '<span>&#x1F415; 품종: ' + breed + '</span>'
+    + '<span>&#x2695;&#xFE0F; 종: ' + species + '</span>'
+    + '<span>&#x1F6B9; 성별: ' + sex + '</span>'
+    + '<span>&#x1F382; 나이: ' + age + '</span>'
+    + '<span style="margin-left:auto;color:#888;">&#x1F4C5; ' + today + '</span>'
+    + '</div>';
+}
+
+/* ── 이미지 저장: 환자정보 + 대상화면 세로 합성 ── */
+function saveAsImage(id) {
+  var target = document.getElementById(id);
+  if (!target || target.style.display === 'none') {
+    alert('저장할 화면이 없습니다. 먼저 분석을 실행하세요.');
+    return;
+  }
+
+  var ptName = document.getElementById('pt_name').value || '환자';
+  var today  = new Date().toLocaleDateString('ko-KR').replace(/\. /g, '-').replace('.', '');
+  var label  = id === 'result' ? '분석결과' : '입력화면';
+
+  /* 환자정보 임시 div 생성 */
+  var ptDiv = document.createElement('div');
+  ptDiv.style.cssText = 'position:fixed;top:-9999px;left:0;width:' + target.offsetWidth + 'px;background:#fff;padding:16px 24px 0;font-family:Malgun Gothic,sans-serif;';
+  ptDiv.innerHTML = getPatientSummaryHtml();
+  document.body.appendChild(ptDiv);
+
+  /* 환자정보 캔버스 */
+  html2canvas(ptDiv, { backgroundColor: '#ffffff', scale: 2 }).then(function(ptCanvas) {
+    document.body.removeChild(ptDiv);
+
+    /* 본문 캔버스 */
+    html2canvas(target, { backgroundColor: '#ffffff', scale: 2 }).then(function(mainCanvas) {
+      /* 세로 합성 */
+      var combined = document.createElement('canvas');
+      combined.width  = mainCanvas.width;
+      combined.height = ptCanvas.height + mainCanvas.height;
+      var ctx = combined.getContext('2d');
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, combined.width, combined.height);
+      ctx.drawImage(ptCanvas,  0, 0);
+      ctx.drawImage(mainCanvas, 0, ptCanvas.height);
+
+      var link = document.createElement('a');
+      link.download = '심초음파_' + ptName + '_' + label + '_' + today + '.jpg';
+      link.href = combined.toDataURL('image/jpeg', 1.0);
+      link.click();
+    });
+  });
+}
+
+/* ════════════════════════════════
+   강아지 분석
+════════════════════════════════ */
+function analyzeDog() {
+  var weight = v('dog_weight');
+
+  /* 파생값 계산 */
+  var lvotLen = v('dog_LVOT_len');
+  var lvotVTI = v('dog_LVOT_VTI');
+  var r       = lvotLen * 10 / 2 * 0.1;
+  var SV      = Math.PI * r * r * lvotVTI;
+  var CO      = SV * v('dog_HR');
+  var LVIDDN  = (weight > 0) ? v('dog_LVIDd') / Math.pow(weight, 0.294) : 0;
+  var mrVol   = v('dog_MR_Vol');
+  var mrFrac  = ((mrVol + SV) > 0) ? (mrVol / (mrVol + SV)) * 100 : 0;
+  var mvE     = v('dog_MV_E');
+  var ivrt    = v('dog_IVRT');
+  var EIVRT   = (ivrt > 0) ? (mvE * 100) / ivrt : 0;
+  var lvET    = v('dog_LV_ET');
+  var PEPET   = (lvET > 0) ? v('dog_LV_PEP') / lvET : 0;
+  var TEI     = (lvET > 0) ? (v('dog_MCO') - lvET) / lvET : 0;
+  var mrV1V3  = v('dog_MR_V1V3');
+  var dPdt    = (mrV1V3 > 0) ? 32000 / mrV1V3 : 0;
+  var LVIDs3BSA = (weight > 0) ? Math.pow(v('dog_LVIDs'), 3) / (Math.pow(weight, 0.666) * 10.1 / 100) : 0;
+  var mvA     = v('dog_MV_A');
+  var EA      = (mvA > 0) ? mvE / mvA : 0;
+  var mvEp    = v('dog_MV_Eprime');
+  var EEp     = (mvEp > 0) ? (mvE * 100) / mvEp : 0;
+
+  /* 정상범위 테이블 */
+  var normLVIDd = (weight > 0) ? 1.53 * Math.pow(weight, 0.294) : null;
+  var normLVIDs = (weight > 0) ? 0.95 * Math.pow(weight, 0.315) : null;
+  var normSV    = (weight > 0) ? 2 * weight : null;
+  var normCO    = (weight > 0) ? 250 * weight : null;
+
+  /* fmt: 숫자를 보기 좋게 */
+  function fmt(n) {
+    if (n === null || n === undefined) return '';
+    var x = parseFloat(n);
+    if (isNaN(x) || !isFinite(x)) return '';
+    return Math.abs(x) >= 100 ? x.toFixed(0) : x.toFixed(2);
+  }
+
+  /* 해석 로직: invertColor(inv)=true 이면 낮을수록 나쁨 */
+  function interp(val, normal, range, inv) {
+    var n = parseFloat(val);
+    if (isNaN(n) || !isFinite(n) || n === 0) return { color: '#888', txt: '-' };
+    var ok = '#155724', bad = '#721c24', warn = '#004085';
+    if (range) {
+      if (n < range[0]) return { color: inv ? ok : warn, txt: inv ? '정상' : '낮음' };
+      if (n > range[1]) return { color: inv ? warn : bad, txt: inv ? '낮음' : '높음' };
+      return { color: ok, txt: '정상' };
+    }
+    if (normal === null || normal === undefined) return { color: '#888', txt: '-' };
+    var nv = parseFloat(normal);
+    if (n < nv) return { color: inv ? ok   : warn, txt: '' };
+    if (n > nv) return { color: inv ? warn : bad,  txt: '' };
+    return { color: ok, txt: '정상' };
+  }
+
+  /* 각 항목 정의 */
+  var items = [
+    /* Volume Overload */
+    { group:'Volume Overload', name:'LVIDDN',            val:LVIDDN,          normal:1.7,      range:null, inv:false, lo:'정상', hi:'DMVD 의심' },
+    { group:'Volume Overload', name:'MV E wave',         val:mvE,             normal:1.0,      range:null, inv:false, lo:'LV 충만기압 감소', hi:'LV 충만기압 증가 (1.25이상→DMVD)' },
+    { group:'Volume Overload', name:'MR Fraction(PISA)', val:mrFrac,          normal:33,       range:null, inv:false, lo:'정상', hi:'MR 존재' },
+    { group:'Volume Overload', name:'E/IVRT ratio',      val:EIVRT,           normal:1.25,     range:null, inv:false, lo:'정상', hi:'LV 충만기압 증가 (2.5이상→DMVD)' },
+    { group:'Volume Overload', name:'LA/Ao ratio',       val:v('dog_LA_Ao'),  normal:1.6,      range:null, inv:false, lo:'정상', hi:'LA 비대' },
+    /* Myocardial Failure */
+    { group:'Myocardial Failure', name:'LVIDd',          val:v('dog_LVIDd'),  normal:normLVIDd,range:null, inv:false, lo:'정상', hi:'Preload 증가 / 수축능력 저하' },
+    { group:'Myocardial Failure', name:'LVIDs',          val:v('dog_LVIDs'),  normal:normLVIDs,range:null, inv:false, lo:'정상', hi:'Afterload 증가 & 수축능력 저하' },
+    { group:'Myocardial Failure', name:'LV PEP/ET',      val:PEPET,           normal:0.41,     range:null, inv:false, lo:'정상', hi:'수축능력 저하' },
+    { group:'Myocardial Failure', name:'Tei : LV IMP',   val:TEI,             normal:0.48,     range:null, inv:false, lo:'정상', hi:'수축능력 저하' },
+    { group:'Myocardial Failure', name:'dP/dt',          val:dPdt,            normal:1200,     range:null, inv:true,  lo:'수축능력 저하', hi:'정상' },
+    { group:'Myocardial Failure', name:"MV S' wave",     val:v('dog_MV_Sprime'), normal:7.6,  range:null, inv:true,  lo:'심실 수축 기능 저하', hi:'정상' },
+    { group:'Myocardial Failure', name:'SV',             val:SV,              normal:normSV,   range:null, inv:true,  lo:'심박출량 저하', hi:'정상 이상' },
+    { group:'Myocardial Failure', name:'CO',             val:CO,              normal:normCO,   range:null, inv:true,  lo:'심박출량 저하', hi:'정상 이상' },
+    /* Diastolic Failure */
+    { group:'Diastolic Failure', name:'LVIDs3/BSA',      val:LVIDs3BSA,       normal:30,       range:null, inv:false, lo:'정상', hi:'이완기능부전' },
+    { group:'Diastolic Failure', name:'MV E/A ratio',    val:EA,              normal:null,     range:[0.8,1.5], inv:false, lo:'이완기능부전 stage 1', hi:'이완기능부전 stage 3' },
+    { group:'Diastolic Failure', name:'DTE',             val:v('dog_DTE'),    normal:null,     range:[50,80],   inv:false, lo:'이완기능부전 stage 3', hi:'이완기능부전 stage 1' },
+    { group:'Diastolic Failure', name:"MV E/E' ratio",   val:EEp,             normal:12.0,     range:null, inv:false, lo:'정상', hi:'이완기능부전 stage 1b 이상' },
+    { group:'Diastolic Failure', name:'IVRT',            val:ivrt,            normal:null,     range:[41,65],   inv:false, lo:'이완기능부전 stage 3', hi:'이완기능부전 stage 1' },
+    /* Pulmonary Hypertension */
+    { group:'Pulmonary Hypertension', name:'MPA/Ao ratio',     val:v('dog_MPA_Ao'),normal:1.15, range:null, inv:false, lo:'정상', hi:'PAH (이완기)' },
+    { group:'Pulmonary Hypertension', name:'RPAD index',        val:v('dog_RPAD'),  normal:35,   range:null, inv:true,  lo:'PAH', hi:'정상' },
+    { group:'Pulmonary Hypertension', name:'TR Fraction(area)', val:v('dog_TR_Frac'),normal:5,  range:null, inv:false, lo:'정상', hi:'TR 존재' },
+    { group:'Pulmonary Hypertension', name:'TR 속도',           val:v('dog_TR_vel'),normal:2.5,  range:null, inv:false, lo:'정상', hi:'PAH (수축기)' },
+    { group:'Pulmonary Hypertension', name:'PR 속도',           val:v('dog_PR_vel'),normal:2.0,  range:null, inv:false, lo:'정상', hi:'PAH (이완기) / PDA' },
+  ];
+
+  var groupDefs = {
+    'Volume Overload':        { color:'#e3f2fd', border:'#2196f3' },
+    'Myocardial Failure':     { color:'#fce4ec', border:'#ec407a' },
+    'Diastolic Failure':      { color:'#f3e5f5', border:'#ab47bc' },
+    'Pulmonary Hypertension': { color:'#e8f5e9', border:'#66bb6a' },
+  };
+
+  var html = '<h2 class="result-title">&#x1F436; 강아지 분석 결과</h2>' + getPatientSummaryHtml();
+
+  for (var gName in groupDefs) {
+    var gData = groupDefs[gName];
+    var groupItems = items.filter(function(it){ return it.group === gName; });
+    html += '<div class="result-group" style="background:' + gData.color + ';">';
+    html += '<h3 style="border-left:5px solid ' + gData.border + ';padding-left:12px;">' + gName + '</h3>';
+    html += '<table class="result-table"><tr><th>항목</th><th>정상범위</th><th>측정값</th><th>해석</th></tr>';
+
+    groupItems.forEach(function(it) {
+      var raw = it.val;
+      var dispVal = fmt(raw);
+      var normalDisp = it.range ? (it.range[0] + ' ~ ' + it.range[1]) : (it.normal !== null ? fmt(it.normal) : '-');
+      var n = parseFloat(raw);
+      var color = '#888', txt = '-';
+
+      if (!isNaN(n) && isFinite(n) && n !== 0) {
+        if (it.range) {
+          if (n < it.range[0])      { color = it.inv ? '#155724' : '#004085'; txt = it.lo; }
+          else if (n > it.range[1]) { color = it.inv ? '#004085' : '#721c24'; txt = it.hi; }
+          else                      { color = '#155724'; txt = '정상'; }
+        } else if (it.normal !== null) {
+          var nv = parseFloat(it.normal);
+          if (n < nv)      { color = it.inv ? '#155724' : '#004085'; txt = it.lo; }
+          else if (n > nv) { color = it.inv ? '#004085' : '#721c24'; txt = it.hi; }
+          else             { color = '#155724'; txt = '정상'; }
+        }
+      }
+
+      html += '<tr>';
+      html += '<td>' + it.name + '</td>';
+      html += '<td>' + normalDisp + '</td>';
+      html += '<td style="color:' + color + ';font-weight:bold;">' + (dispVal || '') + '</td>';
+      html += '<td style="color:' + color + ';">' + txt + '</td>';
+      html += '</tr>';
+    });
+    html += '</table></div>';
+  }
+
+  document.getElementById('analysis-result').innerHTML = html;
+  document.getElementById('result').style.display = 'block';
+  document.getElementById('result').scrollIntoView({ behavior: 'smooth' });
+}
+
+/* ════════════════════════════════
+   고양이 자동계산
+════════════════════════════════ */
+function calcCat() {
+  var mvE  = v('cat_MV_E'),  mvA  = v('cat_MV_A');
+  var mvEp = v('cat_MV_Eprime'), mvAp = v('cat_MV_Aprime');
+  var lvotLen = v('cat_LVOT_len'), lvotVTI = v('cat_LVOT_VTI');
+  var hr = v('cat_HR'), mrVTI = v('cat_MR_VTI');
+  var pep = v('cat_PEP'), et = v('cat_ET');
+
+  if (mvE && mvA)   setVal('cat_MV_EA',  mvE / mvA);
+  if (mvE && mvEp)  setVal('cat_MV_EEp', (mvE / mvEp) * 100);
+  if (mvEp && mvAp) setVal('cat_MV_EAp', mvEp / mvAp);
+
+  var r = lvotLen * 10 / 2 * 0.1;
+  var svCalc = (lvotLen && lvotVTI) ? Math.PI * r * r * lvotVTI : 0;
+  if (svCalc) {
+    setVal('cat_SV', svCalc);
+    if (hr) setVal('cat_CO', svCalc * hr);
+    if (mrVTI) setVal('cat_MR_Frac', (mrVTI / (mrVTI + svCalc)) * 100);
+  }
+  if (pep && et) setVal('cat_PEP_ET', pep / et);
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll('#cat-input input[type="number"]').forEach(function(el) {
+    el.addEventListener('input', calcCat);
+  });
+});
+
+/* ════════════════════════════════
+   고양이 분석
+════════════════════════════════ */
+var catThresh = {
+  cat_2D_IVSd:   { max: 6 },   cat_2D_LVPWd:  { max: 6 },   cat_2D_LVwall: { max: 6 },
+  cat_M_IVSd:    { max: 0.6 }, cat_M_LVPWd:   { max: 0.6 },
+  cat_M_LVIDd:   { max: 1.8 }, cat_M_LVIDs:   { max: 0.9 },
+  cat_FS:        { min: 45 },  cat_EPSS:      { max: 0.04 },
+  cat_LA_len:    { max: 1.6 }, cat_LA_Ao:     { max: 1.5 },  cat_M_LAFS:    { min: 24 },
+  cat_PA_vel:    { max: 1.1 }, cat_PR_vel:    { max: 2.0 },
+  cat_MR_Frac:   { max: 5 },
+  cat_MV_E:      { max: 0.8 }, cat_MV_A:      { max: 0.6 },
+  cat_MV_EA:     { min: 1.0, max: 2.0 },
+  cat_MV_Eprime: { min: 7.2 }, cat_MV_Aprime: { min: 2.9 },  cat_MV_Sprime: { min: 4.4 },
+  cat_MV_EAp:    { min: 1.0 }, cat_MV_EEp:    { max: 8.07 },
+  cat_MR_vel:    { max: 1.5 }, cat_TR_vel:    { max: 2.5 },  cat_AV_vel:    { max: 1.3 },
+  cat_ET:        { min: 116 }, cat_PEP:       { min: 44 },   cat_PEP_ET:    { max: 0.41 },
+};
+
+function styledCat(id) {
+  var val = v(id);
+  var t = catThresh[id];
+  if (!val) return '-';
+  var disp = (Math.abs(val) >= 100) ? val.toFixed(0) : val.toFixed(2);
+  if (!t) return disp;
+  var isOut = (t.min !== undefined && val < t.min) || (t.max !== undefined && val > t.max);
+  return '<span style="color:' + (isOut ? '#c0392b' : '#27ae60') + ';font-weight:bold;">' + disp + '</span>';
+}
+
+function threshLabel(t) {
+  if (!t) return '-';
+  if (t.min !== undefined && t.max !== undefined) return t.min + ' ~ ' + t.max;
+  if (t.min !== undefined) return '\u2265 ' + t.min;
+  if (t.max !== undefined) return '\u2264 ' + t.max;
+  return '-';
+}
+
+function analyzeCat() {
+  calcCat();
+
+  /* 진단 */
+  var diagnosis = 'Normal';
+  var hcmIds = ['cat_2D_IVSd','cat_2D_LVPWd','cat_2D_LVwall','cat_M_IVSd','cat_M_LVPWd'];
+  for (var i = 0; i < hcmIds.length; i++) {
+    var t = catThresh[hcmIds[i]];
+    if (t && v(hcmIds[i]) > t.max) { diagnosis = 'HCM'; break; }
+  }
+  var ea = v('cat_MV_EA'), eap = v('cat_MV_EAp');
+  if (ea >= 2 && eap > 0 && eap <= 1) diagnosis = 'RCM';
+  if (v('cat_TR_vel') > 2.5) diagnosis = 'ARVC';
+
+  var lvForms = Array.prototype.slice.call(document.querySelectorAll('.cat_LVform:checked')).map(function(c){ return c.value; });
+  var lvFormStr = lvForms.length ? lvForms.join(', ') : 'Normal';
+  var dxLabel = (diagnosis === 'HCM') ? lvFormStr + ' HCM' : diagnosis;
+
+  var sec = vStr('cat_SEC');
+  var thrombStr = sec === '있음' ? '&#x26A0;&#xFE0F; 혈전 발생 가능성 높음' : sec === '없음' ? '&#x2705; 혈전 발생 가능성 낮음' : '';
+
+  var stageRows = [
+    { id:'cat_2D_IVSd',   label:'2D: IVSd',      b1:'6 미만',    b2:'6 이상',    c:'7 이상' },
+    { id:'cat_2D_LVPWd',  label:'2D: LVPWd',     b1:'6 미만',    b2:'6 이상',    c:'7 이상' },
+    { id:'cat_2D_LVwall', label:'2D: LV wall',    b1:'6 미만',    b2:'6 이상',    c:'7 이상' },
+    { id:'cat_M_IVSd',    label:'M: IVSd',        b1:'0.6 미만',  b2:'0.6 이상',  c:'0.7 이상' },
+    { id:'cat_M_LVPWd',   label:'M: LVPWd',       b1:'0.6 미만',  b2:'0.6 이상',  c:'0.7 이상' },
+    { id:'cat_LA_len',    label:'LA 길이',         b1:'1.6 이하',  b2:'1.6 이상',  c:'1.6 이상' },
+    { id:'cat_LA_Ao',     label:'LA/Ao ratio',    b1:'1.5 이하',  b2:'1.5 이상',  c:'1.5 이상' },
+    { id:'cat_M_LAFS',    label:'M: LAFS',         b1:'24 이상',  b2:'24 미만',   c:'24 미만' },
+    { id:'cat_MV_EA',     label:'MV E/A ratio',   b1:'1 이하',    b2:'1 이상',    c:'2 이상' },
+    { id:'cat_MV_Eprime', label:"MV E' wave",     b1:'7.2 이상',  b2:'7.2 미만',  c:'7.2 미만' },
+    { id:'cat_MV_EEp',    label:"MV E/E' ratio",  b1:'8.07 이하', b2:'8.07 이상', c:'8.07 이상' },
+  ];
+
+  var extraRows = [
+    { id:'cat_FS',        label:'FS (%)' },
+    { id:'cat_EPSS',      label:'EPSS' },
+    { id:'cat_M_LVIDd',   label:'M: LVIDd' },
+    { id:'cat_M_LVIDs',   label:'M: LVIDs' },
+    { id:'cat_MV_E',      label:'MV E wave' },
+    { id:'cat_MV_A',      label:'MV A wave' },
+    { id:'cat_MV_Sprime', label:"MV S' wave" },
+    { id:'cat_MV_Aprime', label:"MV A' wave" },
+    { id:'cat_MV_EAp',    label:"MV E'/A' ratio" },
+    { id:'cat_MR_vel',    label:'MR 속도' },
+    { id:'cat_MR_Frac',   label:'MR Fraction(PISA)' },
+    { id:'cat_TR_vel',    label:'TR 속도' },
+    { id:'cat_PR_vel',    label:'PR 속도' },
+    { id:'cat_PA_vel',    label:'PA 속도' },
+    { id:'cat_AV_vel',    label:'AV 속도' },
+    { id:'cat_ET',        label:'ET' },
+    { id:'cat_PEP',       label:'PEP' },
+    { id:'cat_PEP_ET',    label:'PEP/ET' },
+    { id:'cat_SV',        label:'SV' },
+    { id:'cat_CO',        label:'CO' },
+  ];
+
+  var html = '<h2 class="result-title">&#x1F431; 고양이 분석 결과</h2>' + getPatientSummaryHtml();
+  html += '<div class="diagnosis-banner">';
+  html += '<div class="dx-label">' + dxLabel + '</div>';
+  if (thrombStr) html += '<div class="dx-sub">' + thrombStr + '</div>';
+  if (vStr('cat_LVOT_turb') === '있음') html += '<div class="dx-sub" style="color:#c0392b;">&#x26A0;&#xFE0F; LVOT Turbulence 있음</div>';
+  if (vStr('cat_SAM')       === '있음') html += '<div class="dx-sub" style="color:#c0392b;">&#x26A0;&#xFE0F; SAM (LVOT 폐쇄) 있음</div>';
+  html += '</div>';
+
+  html += '<div class="result-group" style="background:#e3f2fd;">';
+  html += '<h3 style="border-left:5px solid #2196f3;padding-left:12px;">ACVIM 단계 평가 (B1 / B2 / C)</h3>';
+  html += '<table class="result-table cat-stage-table"><tr><th>항목</th><th>B1</th><th>B2</th><th>C</th><th>측정값</th></tr>';
+  stageRows.forEach(function(r) {
+    html += '<tr><td>' + r.label + '</td><td style="font-size:.8rem;color:#555;">' + r.b1 + '</td><td style="font-size:.8rem;color:#555;">' + r.b2 + '</td><td style="font-size:.8rem;color:#555;">' + r.c + '</td><td>' + styledCat(r.id) + '</td></tr>';
+  });
+  html += '</table></div>';
+
+  html += '<div class="result-group" style="background:#f3e5f5;">';
+  html += '<h3 style="border-left:5px solid #ab47bc;padding-left:12px;">기타 측정값</h3>';
+  html += '<table class="result-table"><tr><th>항목</th><th>정상 기준</th><th>측정값</th></tr>';
+  extraRows.forEach(function(r) {
+    html += '<tr><td>' + r.label + '</td><td>' + threshLabel(catThresh[r.id]) + '</td><td>' + styledCat(r.id) + '</td></tr>';
+  });
+  html += '</table></div>';
+
+  document.getElementById('analysis-result').innerHTML = html;
+  document.getElementById('result').style.display = 'block';
+  document.getElementById('result').scrollIntoView({ behavior: 'smooth' });
+}
+</script>
+</body>
+</html>
