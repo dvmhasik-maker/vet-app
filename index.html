@@ -2,8 +2,27 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <title id="page-title">수의 심장 초음파 분석기</title>
+  <title id="page-title">수의 심장 초음파 분석기 | Veterinary Echo Analyzer</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="전문적인 수의 심장 초음파 분석 도구. 강아지와 고양이의 심장 초음파 측정값을 분석하고 ACVIM 가이드라인에 따른 진단 보조 기능을 제공합니다.">
+  <meta name="keywords" content="수의학, 심장초음파, 강아지 심장병, 고양이 HCM, ACVIM, 수의사, 심장 분석기">
+  <meta property="og:title" content="수의 심장 초음파 분석기">
+  <meta property="og:description" content="강아지 및 고양이 심장 초음파 데이터 분석 및 진단 보조 도구">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "수의 심장 초음파 분석기",
+    "alternateName": "Veterinary Echo Analyzer",
+    "description": "Veterinary echocardiography analysis tool for dogs and cats based on ACVIM guidelines.",
+    "applicationCategory": "HealthApplication",
+    "operatingSystem": "Web"
+  }
+  </script>
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <style>
     :root {
@@ -121,13 +140,47 @@
       .patient-grid { grid-template-columns: 1fr; }
       .lang-switcher { position: static; justify-content: center; margin-bottom: 10px; }
     }
+
+    /* ── 추가된 섹션 스타일 ── */
+    nav { background: #fff; border-bottom: 1px solid #ddd; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+    .nav-container { max-width: 1000px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; }
+    .nav-links { display: flex; gap: 20px; }
+    .nav-links a { text-decoration: none; color: #555; font-size: 0.9rem; font-weight: bold; cursor: pointer; }
+    .nav-links a:hover { color: var(--blue); }
+
+    .content-section { max-width: 760px; margin: 40px auto; padding: 0 24px; display: none; }
+    .content-section.active { display: block; }
+    .content-section h2 { border-bottom: 2px solid var(--blue); padding-bottom: 10px; color: #333; }
+    .content-section p, .content-section li { line-height: 1.6; color: #444; }
+    .guide-item { margin-bottom: 20px; padding: 15px; background: #fff; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.05); }
+    .guide-item h4 { margin: 0 0 8px; color: var(--blue); }
+
+    footer { background: #333; color: #fff; padding: 40px 20px; text-align: center; margin-top: 60px; }
+    .footer-links { display: flex; justify-content: center; gap: 30px; margin-bottom: 20px; flex-wrap: wrap; }
+    .footer-links a { color: #ccc; text-decoration: none; font-size: 0.85rem; }
+    .footer-links a:hover { color: #fff; }
+    .copyright { font-size: 0.8rem; color: #888; }
   </style>
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7706535502008479"
      crossorigin="anonymous"></script>
 </head>
 <body>
 
-<div class="top-header">
+<nav>
+  <div class="nav-container">
+    <div style="font-weight:bold; color:var(--blue); font-size:1.1rem;">VetEcho</div>
+    <div class="nav-links">
+      <a onclick="showSection('analyzer')" data-i18n="nav_analyzer">분석기</a>
+      <a onclick="showSection('guide')" data-i18n="nav_guide">가이드</a>
+      <a onclick="showSection('about')" data-i18n="nav_about">소개</a>
+      <a onclick="showSection('faq')" data-i18n="nav_faq">FAQ</a>
+    </div>
+  </div>
+</nav>
+
+<div id="section-analyzer" class="content-section active">
+  <div class="top-header">
+
   <div class="lang-switcher">
     <button id="lang-ko" class="active" onclick="setLanguage('ko')">KO</button>
     <button id="lang-en" onclick="setLanguage('en')">EN</button>
@@ -368,8 +421,72 @@
 <div class="container" id="result" style="display:none;">
   <div id="analysis-result"></div>
 </div>
+</div> <!-- end section-analyzer -->
+
+<!-- ════════ 가이드 섹션 ════════ -->
+<div id="section-guide" class="content-section">
+<h2 data-i18n="guide_title">심장 초음파 지표 가이드</h2>
+<div class="guide-item">
+  <h4 data-i18n="guide_la_ao_title">LA/Ao Ratio (좌심방/대동맥 비)</h4>
+  <p data-i18n="guide_la_ao_desc">좌심방의 크기를 대동맥과 비교하여 평가하는 지표입니다. 강아지 이첨판 폐쇄부전증(DMVD)에서 심부전의 진행 단계를 결정하는 핵심 지표로 사용됩니다. (정상 기준 < 1.6)</p>
+</div>
+<div class="guide-item">
+  <h4 data-i18n="guide_lviddn_title">LVIDDN (정규화된 좌심실 내경)</h4>
+  <p data-i18n="guide_lviddn_desc">체중에 따라 정규화된 좌심실의 확장기 내경입니다. 심장 비대 여부를 판단하는 데 매우 중요합니다. (정상 기준 < 1.7)</p>
+</div>
+<div class="guide-item">
+  <h4 data-i18n="guide_fs_title">FS (Shortening Fraction, 분획 단축률)</h4>
+  <p data-i18n="guide_fs_desc">심실의 수축 능력을 평가하는 지표입니다. 수축기 내경과 확장기 내경의 차이를 비율로 나타냅니다.</p>
+</div>
+<div class="guide-item">
+  <h4 data-i18n="guide_hcm_title">고양이 HCM 진단 기준</h4>
+  <p data-i18n="guide_hcm_desc">고양이에서 심실 벽 두께(IVSd, LVPWd)가 6mm 이상인 경우 비대성 심근증(HCM)을 의심할 수 있습니다.</p>
+</div>
+</div>
+
+<!-- ════════ 소개 섹션 ════════ -->
+<div id="section-about" class="content-section">
+<h2 data-i18n="about_title">사이트 소개</h2>
+<p data-i18n="about_desc1">본 분석기는 수의사 및 수의대생들이 심장 초음파 측정값을 보다 쉽고 정확하게 분석할 수 있도록 돕기 위해 제작된 웹 도구입니다.</p>
+<p data-i18n="about_desc2">ACVIM(American College of Veterinary Internal Medicine) 가이드라인 및 공신력 있는 수의 심장학 문헌들의 정상 범위를 기준으로 해석을 제공합니다.</p>
+<p data-i18n="about_disclaimer"><strong>주의:</strong> 본 도구는 진단 보조 목적으로만 사용되어야 하며, 최종적인 진단과 치료 결정은 반드시 담당 수의사의 임상적 판단에 따라야 합니다.</p>
+</div>
+
+<!-- ════════ FAQ 섹션 ════════ -->
+<div id="section-faq" class="content-section">
+<h2 data-i18n="faq_title">자주 묻는 질문</h2>
+<div class="guide-item">
+  <h4 data-i18n="faq_q1">데이터가 서버에 저장되나요?</h4>
+  <p data-i18n="faq_a1">아니요. 입력하신 모든 환자 정보와 측정값은 사용자의 브라우저 내에서만 처리되며, 서버로 전송되거나 저장되지 않습니다.</p>
+</div>
+<div class="guide-item">
+  <h4 data-i18n="faq_q2">정상 범위의 출처는 어디인가요?</h4>
+  <p data-i18n="faq_a2">ACVIM Consensus Guidelines 및 Cornell, UC Davis 등 주요 수의과 대학의 표준 참고 범위를 기반으로 합니다.</p>
+</div>
+</div>
+
+<!-- ════════ 법적 고지 섹션 ════════ -->
+<div id="section-privacy" class="content-section">
+<h2 data-i18n="privacy_title">개인정보 처리방침</h2>
+<p data-i18n="privacy_desc">본 사이트는 사용자의 개인 정보를 수집하지 않습니다. 분석에 사용되는 데이터는 클라이언트 측(사용자 기기)에서만 처리됩니다. 단, 구글 애드센스와 같은 타사 서비스는 광고 제공을 위해 쿠키를 사용할 수 있습니다.</p>
+</div>
+
+<div id="section-terms" class="content-section">
+<h2 data-i18n="terms_title">이용약관</h2>
+<p data-i18n="terms_desc">본 서비스는 '있는 그대로' 제공되며, 분석 결과의 오류로 인해 발생하는 어떠한 손해에 대해서도 책임을 지지 않습니다. 모든 의료적 결정은 전문가의 상담을 통해 이루어져야 합니다.</p>
+</div>
+
+<footer>
+<div class="footer-links">
+  <a onclick="showSection('about')" data-i18n="nav_about">소개</a>
+  <a onclick="showSection('privacy')" data-i18n="privacy_title">개인정보 처리방침</a>
+  <a onclick="showSection('terms')" data-i18n="terms_title">이용약관</a>
+</div>
+<p class="copyright">© 2026 Veterinary Echo Analyzer. All rights reserved.</p>
+</footer>
 
 <script>
+
 /* ── 다국어 지원 (i18n) ── */
 var currentLang = 'ko';
 var translations = {
@@ -450,7 +567,34 @@ var translations = {
     tr_present: "TR 존재",
     pah_systolic: "PAH (수축기)",
     pah_diastolic: "PAH (이완기) / PDA",
-    normal_or_above: "정상 이상"
+    normal_or_above: "정상 이상",
+    /* New keys */
+    nav_analyzer: "분석기",
+    nav_guide: "가이드",
+    nav_about: "소개",
+    nav_faq: "FAQ",
+    guide_title: "심장 초음파 지표 가이드",
+    guide_la_ao_title: "LA/Ao Ratio (좌심방/대동맥 비)",
+    guide_la_ao_desc: "좌심방의 크기를 대동맥과 비교하여 평가하는 지표입니다. 강아지 이첨판 폐쇄부전증(DMVD)에서 심부전의 진행 단계를 결정하는 핵심 지표로 사용됩니다. (정상 기준 < 1.6)",
+    guide_lviddn_title: "LVIDDN (정규화된 좌심실 내경)",
+    guide_lviddn_desc: "체중에 따라 정규화된 좌심실의 확장기 내경입니다. 심장 비대 여부를 판단하는 데 매우 중요합니다. (정상 기준 < 1.7)",
+    guide_fs_title: "FS (Shortening Fraction, 분획 단축률)",
+    guide_fs_desc: "심실의 수축 능력을 평가하는 지표입니다. 수축기 내경과 확장기 내경의 차이를 비율로 나타냅니다.",
+    guide_hcm_title: "고양이 HCM 진단 기준",
+    guide_hcm_desc: "고양이에서 심실 벽 두께(IVSd, LVPWd)가 6mm 이상인 경우 비대성 심근증(HCM)을 의심할 수 있습니다.",
+    about_title: "사이트 소개",
+    about_desc1: "본 분석기는 수의사 및 수의대생들이 심장 초음파 측정값을 보다 쉽고 정확하게 분석할 수 있도록 돕기 위해 제작된 웹 도구입니다.",
+    about_desc2: "ACVIM(American College of Veterinary Internal Medicine) 가이드라인 및 공신력 있는 수의 심장학 문헌들의 정상 범위를 기준으로 해석을 제공합니다.",
+    about_disclaimer: "<strong>주의:</strong> 본 도구는 진단 보조 목적으로만 사용되어야 하며, 최종적인 진단과 치료 결정은 반드시 담당 수의사의 임상적 판단에 따라야 합니다.",
+    faq_title: "자주 묻는 질문",
+    faq_q1: "데이터가 서버에 저장되나요?",
+    faq_a1: "아니요. 입력하신 모든 환자 정보와 측정값은 사용자의 브라우저 내에서만 처리되며, 서버로 전송되거나 저장되지 않습니다.",
+    faq_q2: "정상 범위의 출처는 어디인가요?",
+    faq_a2: "ACVIM Consensus Guidelines 및 Cornell, UC Davis 등 주요 수의과 대학의 표준 참고 범위를 기반으로 합니다.",
+    privacy_title: "개인정보 처리방침",
+    privacy_desc: "본 사이트는 사용자의 개인 정보를 수집하지 않습니다. 분석에 사용되는 데이터는 클라이언트 측(사용자 기기)에서만 처리됩니다. 단, 구글 애드센스와 같은 타사 서비스는 광고 제공을 위해 쿠키를 사용할 수 있습니다.",
+    terms_title: "이용약관",
+    terms_desc: "본 서비스는 '있는 그대로' 제공되며, 분석 결과의 오류로 인해 발생하는 어떠한 손해에 대해서도 책임을 지지 않습니다. 모든 의료적 결정은 전문가의 상담을 통해 이루어져야 합니다."
   },
   en: {
     page_title: "Veterinary Echo Analyzer",
@@ -529,7 +673,34 @@ var translations = {
     tr_present: "TR Present",
     pah_systolic: "PAH (Systolic)",
     pah_diastolic: "PAH (Diastolic) / PDA",
-    normal_or_above: "Normal or Above"
+    normal_or_above: "Normal or Above",
+    /* New keys */
+    nav_analyzer: "Analyzer",
+    nav_guide: "Guide",
+    nav_about: "About",
+    nav_faq: "FAQ",
+    guide_title: "Echocardiography Guide",
+    guide_la_ao_title: "LA/Ao Ratio (Left Atrial to Aortic)",
+    guide_la_ao_desc: "This ratio evaluates the size of the left atrium compared to the aorta. It's a key metric for determining the stage of heart failure in dogs with DMVD. (Normal < 1.6)",
+    guide_lviddn_title: "LVIDDN (Normalized LV Internal Diameter)",
+    guide_lviddn_desc: "The diastolic internal diameter of the left ventricle normalized to body weight. Critical for assessing cardiac enlargement. (Normal < 1.7)",
+    guide_fs_title: "FS (Shortening Fraction)",
+    guide_fs_desc: "A measure of ventricular systolic function, representing the percentage change in LV diameter between systole and diastole.",
+    guide_hcm_title: "Cat HCM Diagnostic Criteria",
+    guide_hcm_desc: "In cats, a ventricular wall thickness (IVSd, LVPWd) of 6mm or greater is indicative of Hypertrophic Cardiomyopathy (HCM).",
+    about_title: "About Us",
+    about_desc1: "This analyzer is a web-based tool designed to help veterinarians and veterinary students analyze echocardiographic measurements more easily and accurately.",
+    about_desc2: "Interpretations are based on normal ranges from ACVIM Consensus Guidelines and reputable veterinary cardiology literature.",
+    about_disclaimer: "<strong>Disclaimer:</strong> This tool is for diagnostic assistance only. Final diagnosis and treatment decisions must be made by a veterinarian's clinical judgment.",
+    faq_title: "FAQ",
+    faq_q1: "Is data stored on a server?",
+    faq_a1: "No. All patient info and measurements are processed locally in your browser and are not sent to or stored on any server.",
+    faq_q2: "What is the source of the reference ranges?",
+    faq_a2: "Our data is based on ACVIM Consensus Guidelines and standard reference ranges from major veterinary colleges like Cornell and UC Davis.",
+    privacy_title: "Privacy Policy",
+    privacy_desc: "This site does not collect personal information. Data used for analysis is processed client-side only. Third-party services like Google AdSense may use cookies for advertising.",
+    terms_title: "Terms of Service",
+    terms_desc: "This service is provided 'as is'. We are not liable for any damages resulting from errors in analysis. All medical decisions should be made in consultation with a professional."
   }
 };
 
@@ -538,7 +709,8 @@ function setLanguage(lang) {
   document.getElementById('lang-ko').classList.toggle('active', lang === 'ko');
   document.getElementById('lang-en').classList.toggle('active', lang === 'en');
   
-  document.title = translations[lang].page_title;
+  // Update title - don't overwrite the whole thing if we want to keep the suffix
+  document.title = (lang === 'ko' ? "수의 심장 초음파 분석기 | Veterinary Echo Analyzer" : "Veterinary Echo Analyzer | VetEcho");
   document.getElementById('main-title').innerHTML = translations[lang].main_title;
   
   document.querySelectorAll('[data-i18n]').forEach(el => {
@@ -559,6 +731,19 @@ function setLanguage(lang) {
   if (document.getElementById('result').style.display === 'block') {
     if (document.getElementById('dog-input').style.display === 'block') analyzeDog();
     else analyzeCat();
+  }
+}
+
+function showSection(sectionId) {
+  // Hide all sections
+  document.querySelectorAll('.content-section').forEach(section => {
+    section.classList.remove('active');
+  });
+  // Show target section
+  const target = document.getElementById('section-' + sectionId);
+  if (target) {
+    target.classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 }
 
