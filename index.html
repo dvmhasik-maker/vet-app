@@ -907,7 +907,7 @@ function analyzeDog() {
 
   var items = [
     { group:'Volume Overload', name:'LVIDDN',            val:LVIDDN,          normal:1.7,      range:null, inv:false, lo:t.normal, hi:t.dmvd_suspect },
-    { group:'Volume Overload', name:'MV E wave',         val:mvE,             normal:1.0,      range:null, inv:false, lo:t.lv_fill_low, hi:t.lv_fill_high },
+    { group:'Volume Overload', name:'MV E wave',         val:mvE,             normal:1.0,      range:null, inv:false, lo:t.lv_fill_low, hi:t.lv_fill_high_mv_e },
     { group:'Volume Overload', name:'MR Fraction(PISA)', val:mrFrac,          normal:33,       range:null, inv:false, lo:t.normal, hi:t.mr_present },
     { group:'Volume Overload', name:'E/IVRT ratio',      val:EIVRT,           normal:1.25,     range:null, inv:false, lo:t.normal, hi:t.lv_fill_high },
     { group:'Volume Overload', name:'LA/Ao ratio',       val:v('dog_LA_Ao'),  normal:1.6,      range:null, inv:false, lo:t.normal, hi:t.la_enlarge },
@@ -1141,3 +1141,9 @@ function analyzeCat() {
 </script>
 </body>
 </html>
+View({ behavior: 'smooth' });
+}
+</script>
+</body>
+</html>
+html>
